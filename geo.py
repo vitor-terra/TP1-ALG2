@@ -1,7 +1,7 @@
 GEOHASH_ALPHABET = ('0','1','2','3','4','5','6','7','8','9','b','c','d','e','f','g','h','j','k','m','n','p','q','r','s','t','u','v','w','x','y','z')
 PRECISION = 8
 
-def interpolate(x, y):
+def interleave(x, y):
     mask = 0b10000000000000000000000000000000
     res = 0
     current_bit_index = 63
@@ -14,32 +14,32 @@ def interpolate(x, y):
         res += d1 + d2
     return res
 
-def gcs_to_geohash(x, y):
-    x_interval = [-180, 0, 180]
-    xbin = 0
+def gcs_to_geohash(lon, lat):
+    lon_interval = [-180, 0, 180]
+    lon_bin = 0
     for _ in range(32):
-        if x >= x_interval[1]:
-            xbin += 1
-            x_interval = [x_interval[1], (x_interval[2] + x_interval[1])/2, x_interval[2]]
+        if lon >= lon_interval[1]:
+            lon_bin += 1
+            lon_interval = [lon_interval[1], (lon_interval[2] + lon_interval[1])/2, lon_interval[2]]
         else:
-            x_interval = [x_interval[0], (x_interval[0] + x_interval[1])/2, x_interval[1]]
+            lon_interval = [lon_interval[0], (lon_interval[0] + lon_interval[1])/2, lon_interval[1]]
 
-        xbin <<= 1
-    xbin >>= 1
+        lon_bin <<= 1
+    lon_bin >>= 1
 
-    y_interval = [-90, 0, 90]
-    ybin = 0
+    lat_interval = [-90, 0, 90]
+    lat_bin = 0
     for _ in range(32):
-        if y >= y_interval[1]:
-            ybin += 1
-            y_interval = [y_interval[1], (y_interval[2] + y_interval[1])/2, y_interval[2]]
+        if lat >= lat_interval[1]:
+            lat_bin += 1
+            lat_interval = [lat_interval[1], (lat_interval[2] + lat_interval[1])/2, lat_interval[2]]
         else:
-            y_interval = [y_interval[0], (y_interval[0] + y_interval[1])/2, y_interval[1]]
+            lat_interval = [lat_interval[0], (lat_interval[0] + lat_interval[1])/2, lat_interval[1]]
 
-        ybin <<= 1
-    ybin >>= 1
+        lat_bin <<= 1
+    lat_bin >>= 1
 
-    bin_geohash = interpolate(xbin, ybin)
+    bin_geohash = interleave(lon_bin, lat_bin)
     mask = 0b1111100000000000000000000000000000000000000000000000000000000000
     string_geohash = ""
     for i in range(PRECISION):
@@ -47,4 +47,4 @@ def gcs_to_geohash(x, y):
         mask >>= 5
     return string_geohash
 
-print(gcs_to_geohash(19, -43))
+print(gcs_to_geohash(10.40744, 57.64911))
