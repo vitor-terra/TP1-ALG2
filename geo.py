@@ -1,3 +1,7 @@
+import csv
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
+
 GEOHASH_ALPHABET = ('0','1','2','3','4','5','6','7','8','9','b','c','d','e','f','g','h','j','k','m','n','p','q','r','s','t','u','v','w','x','y','z')
 PRECISION = 8
 
@@ -47,4 +51,64 @@ def gcs_to_geohash(lon, lat):
         mask >>= 5
     return string_geohash
 
-print(gcs_to_geohash(10.40744, 57.64911))
+i = 0
+
+geolocator = Nominatim(user_agent="Geocode BH Bares")
+geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1.1, max_retries=5, error_wait_seconds=5)
+with open("bares.csv", "r", encoding="utf-8") as data:
+    bares = csv.DictReader(data)
+
+    with open("nao_encontrados.txt", "w", encoding="utf-8") as f1:
+
+        with open("encontrados.csv", "w", encoding="utf-8", newline="") as f2:
+            w2 = csv.writer(f2)
+            w2.writerow(bares.fieldnames)
+
+            with open("coordenadas.csv", "w", encoding="utf-8", newline="") as f3:
+                w3 = csv.writer(f3)
+                w3.writerow(["_id", "NOME", "NOME_FANTASIA", "LONGITUDE", "LATITUDE"])
+                
+                for row in bares:
+                    i += 1
+                    if i > 50:
+                        break
+
+                    if row["DESC_LOGRADOURO"] == "AVE":
+                        desc_logradouro = "Avenida "
+                    elif row["DESC_LOGRADOURO"] == "RUA":
+                        desc_logradouro = "Rua "
+                    elif row["DESC_LOGRADOURO"] == "ROD":
+                        desc_logradouro = "Rodovia "
+                    elif row["DESC_LOGRADOURO"] == "PCA":
+                        desc_logradouro = "Praça "
+                    elif row["DESC_LOGRADOURO"] == "ALA":
+                        desc_logradouro = "Alameda "
+                    elif row["DESC_LOGRADOURO"] == "EST":
+                        desc_logradouro = "Estrada "
+                    elif row["DESC_LOGRADOURO"] == "BEC":
+                        desc_logradouro = "Beco "
+                    elif row["DESC_LOGRADOURO"] == "TRV":
+                        desc_logradouro = "Travessa "
+                    elif row["DESC_LOGRADOURO"] == "VIA":
+                        desc_logradouro = "Via "
+                    elif row["DESC_LOGRADOURO"] == "VDP":
+                        continue
+                    else:
+                        print(row)
+                        continue
+
+                    string = desc_logradouro + row["NOME_LOGRADOURO"].title() + ", " + row["NUMERO_IMOVEL"] + ", " + row["NOME_BAIRRO"].title()  + ", Belo Horizonte, MG, Brasil"
+                    location = geocode(string)
+
+                    if location is None:
+                        string = desc_logradouro + row["NOME_LOGRADOURO"].title() + ", " + row["NUMERO_IMOVEL"] + ", Belo Horizonte, MG, Brasil"
+                        location = geocode(string)
+
+                    if location is None:
+                        f1.write(f"{string} ------- {row}\n")
+
+                    else:
+                        w2.writerow(row.values())
+                        w3.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], location.longitude, location.latitude])
+
+#print(gcs_to_geohash(10.40744, 57.64911))
