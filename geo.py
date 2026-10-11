@@ -51,8 +51,6 @@ def gcs_to_geohash(lon, lat):
         mask >>= 5
     return string_geohash
 
-i = 0
-
 geolocator = Nominatim(user_agent="Geocode BH Bares")
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1.1, max_retries=5, error_wait_seconds=5)
 with open("bares.csv", "r", encoding="utf-8") as data:
@@ -66,12 +64,9 @@ with open("bares.csv", "r", encoding="utf-8") as data:
 
             with open("coordenadas.csv", "w", encoding="utf-8", newline="") as f3:
                 w3 = csv.writer(f3)
-                w3.writerow(["_id", "NOME", "NOME_FANTASIA", "LONGITUDE", "LATITUDE"])
+                w3.writerow(["_id", "NOME", "NOME_FANTASIA", "LONGITUDE", "LATITUDE", "GEOHASH"])
                 
                 for row in bares:
-                    i += 1
-                    if i > 50:
-                        break
 
                     if row["DESC_LOGRADOURO"] == "AVE":
                         desc_logradouro = "Avenida "
@@ -109,6 +104,6 @@ with open("bares.csv", "r", encoding="utf-8") as data:
 
                     else:
                         w2.writerow(row.values())
-                        w3.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], location.longitude, location.latitude])
+                        w3.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], location.longitude, location.latitude, gcs_to_geohash(location.longitude, location.latitude)])
 
 #print(gcs_to_geohash(10.40744, 57.64911))
