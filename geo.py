@@ -103,7 +103,9 @@ with open("bares.csv", "r", encoding="utf-8") as data:
                         f1.write(f"{string} ------- {row}\n")
 
                     else:
+                        geohash = gcs_to_geohash(location.longitude, location.latitude)
+                        print(f"Encontrado {string}, Geohash = {geohash}")
                         w2.writerow(row.values())
-                        w3.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], location.longitude, location.latitude, gcs_to_geohash(location.longitude, location.latitude)])
+                        w3.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], location.longitude, location.latitude, geohash])
 
 #print(gcs_to_geohash(10.40744, 57.64911))
