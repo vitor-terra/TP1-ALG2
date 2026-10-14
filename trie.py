@@ -46,10 +46,20 @@ class Trie():
         current_node.children[geohash[0]] = Node(geohash, {}, [driver_id])
         return True
 
-    def get(self, key):
-        pass
+    def get_drivers(self, geohash):
+        node = self.root
+        while geohash:
+            child = node.children.get(geohash[0])
+            if child is None or not geohash.startswith(child.geohash):
+                return None
+            geohash = geohash[len(child.geohash):]
+            node = child
+        return node.drivers
 
 t = Trie()
 t.insert(t.root, "abc", 0)
 t.insert(t.root, "abd", 1)
 t.insert(t.root, "abx", 2)
+t.insert(t.root, "abd", 3)
+
+print(t.get_drivers('abd'))
