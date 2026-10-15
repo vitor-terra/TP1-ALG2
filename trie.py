@@ -51,15 +51,41 @@ class Trie():
         while geohash:
             child = node.children.get(geohash[0])
             if child is None or not geohash.startswith(child.geohash):
-                return None
+                return []
             geohash = geohash[len(child.geohash):]
             node = child
         return node.drivers
 
-t = Trie()
-t.insert(t.root, "abc", 0)
-t.insert(t.root, "abd", 1)
-t.insert(t.root, "abx", 2)
-t.insert(t.root, "abd", 3)
+    def prefix_search(self, geohash, start = None):
+        #breakpoint()
 
-print(t.get_drivers('abd'))
+        if start is None:
+            start = self.root
+
+        #Name change for clarity
+        node = start
+
+        while geohash:
+            child = node.children.get(geohash[0])
+            if child is None or not longest_common_prefix(geohash, child.geohash) == min(len(geohash), len(child.geohash)):
+                return []
+            geohash = geohash[len(child.geohash):]
+            node = child
+
+        drivers = []
+        if node.children:
+            for c in node.children:
+                drivers += (self.prefix_search("", node.children[c]))
+        else:
+            return node.drivers
+
+        return drivers 
+
+t = Trie()
+t.insert(t.root, "7h2y8jsb", 0)
+t.insert(t.root, "7h2y8jsc", 1)
+t.insert(t.root, "7h2y8k01", 2)
+t.insert(t.root, "7h2xrcsw", 3)
+breakpoint()
+
+print(t.prefix_search('7h2y8j'))
