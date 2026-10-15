@@ -51,6 +51,29 @@ def gcs_to_geohash(lon, lat):
         mask >>= 5
     return string_geohash
 
+def geohash_to_gcs(geohash):
+    pass
+
+#Os thersholds são um pouco diferentes
+def find_prefix_length_given_radius(radius):
+    if radius <= 0:
+        raise ValueError(f"Use apenas números maiores do que 0.")
+    
+    if radius < 19:
+        return 8
+    elif radius < 143:
+        return 7
+    elif radius < 608:
+        return 6
+    elif radius < 4600:
+        return 5
+    elif radius < 19400:
+        return 4
+    elif radius < 30000:
+        return 3
+    
+    raise ValueError(f"Área de busca grande demais. Tente uma área de no máximo 30000 metros.")
+
 geolocator = Nominatim(user_agent="Geocode BH Bares")
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1.1, max_retries=5, error_wait_seconds=5)
 with open("bares.csv", "r", encoding="utf-8") as data:
