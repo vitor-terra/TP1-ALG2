@@ -101,7 +101,7 @@ def treat_data():
                     geohash = gcs_to_geohash(longitude, latitude)
                     writer.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], f"{float(s[1])} {float(s[2])}", longitude, latitude, geohash, row["NOME_BAIRRO"], row["DESC_LOGRADOURO"], row["NOME_LOGRADOURO"], row["NUMERO_IMOVEL"], row["COMPLEMENTO"]])
 
-def setup():
+def setup_restaurant_dict():
     bares_dict = {}
     with open("atividades_economicas_curado.csv", "r", encoding="utf-8-sig") as data:
         bares = csv.DictReader(data)
@@ -111,7 +111,7 @@ def setup():
 
 if __name__ == "__main__":
     treat_data()
-    bares = setup()
+    bares = setup_restaurant_dict()
 
 
 #geolocator = Nominatim(user_agent="Geocode BH Bares")
