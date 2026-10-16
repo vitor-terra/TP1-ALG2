@@ -76,6 +76,41 @@ def find_prefix_length_given_radius(radius):
     
     raise ValueError(f"Área de busca grande demais. Tente uma área de no máximo 30000 metros.")
 
+
+def treat_data():
+    CNAES = set()
+
+    with open("bares.csv", "r", encoding="utf-8") as data:
+        bares = csv.DictReader(data)             
+        for row in bares:
+            CNAES.add(row['CNAE_PRINCIPAL'])
+
+    with open("atividades_economicas.csv", "r", encoding="utf-8-sig") as data:
+        with open("atividades_economicas_curado.csv", "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["_id", "NOME", "NOME_FANTASIA","GEOMETRIA", "LONGITUDE", "LATITUDE", "GEOHASH"])
+
+            to_gcs = Transformer.from_crs("EPSG:31983", "EPSG:4326", always_xy=True)
+
+            estabelecimentos = csv.DictReader(data)             
+            for row in estabelecimentos:
+                if row['CNAE_PRINCIPAL'] in CNAES:
+                    s = re.match(r"POINT \(([\d.]+) ([\d.]+)\)", row["GEOMETRIA"]) 
+                    longitude, latitude = to_gcs.transform(float(s[1]), float(s[2]))
+                    geohash = gcs_to_geohash(longitude, latitude)
+                    writer.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], f"{float(s[1])} {float(s[2])}", longitude, latitude, geohash])
+
+def setup():
+    bares_dict = {}
+    with open("atividades_economicas_curado.csv", "r", encoding="utf-8-sig") as data:
+        bares = csv.DictReader(data)
+        for row in bares:    
+            bares_dict[row['_id']] = row
+    return bares_dict
+
+bares = setup()
+
+
 #geolocator = Nominatim(user_agent="Geocode BH Bares")
 #geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1.1, max_retries=5, error_wait_seconds=5)
 #with open("bares.csv", "r", encoding="utf-8") as data:
@@ -132,37 +167,3 @@ def find_prefix_length_given_radius(radius):
 #                        print(f"Encontrado {string}, Geohash = {geohash}")
 #                        w2.writerow(row.values())
 #                        w3.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], location.longitude, location.latitude, geohash])
-
-CNAES = set()
-
-with open("bares.csv", "r", encoding="utf-8") as data:
-    bares = csv.DictReader(data)             
-    for row in bares:
-        CNAES.add(row['CNAE_PRINCIPAL'])
-
-with open("atividades_economicas.csv", "r", encoding="utf-8-sig") as data:
-    with open("atividades_economicas_curado.csv", "w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["_id", "NOME", "NOME_FANTASIA","GEOMETRIA", "LONGITUDE", "LATITUDE", "GEOHASH"])
-
-        to_gcs = Transformer.from_crs("EPSG:31983", "EPSG:4326", always_xy=True)
-
-        estabelecimentos = csv.DictReader(data)             
-        for row in estabelecimentos:
-            if row['CNAE_PRINCIPAL'] in CNAES:
-                s = re.match(r"POINT \(([\d.]+) ([\d.]+)\)", row["GEOMETRIA"]) 
-                longitude, latitude = to_gcs.transform(float(s[1]), float(s[2]))
-                geohash = gcs_to_geohash(longitude, latitude)
-                writer.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], f"{float(s[1])} {float(s[2])}", longitude, latitude, geohash])
-
-
-
-#with open("20240926_atividade_economica.csv", "r", encoding="utf-8") as raw_data:
-#    data = csv.DictReader(raw_data)
-#
-#    geohash_data =  {}
-#    breakpoint()
-#    for row in data:
-#        print(row)
-#    pass
-#print(gcs_to_geohash(10.40744, 57.64911))
