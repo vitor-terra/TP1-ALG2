@@ -88,7 +88,8 @@ def treat_data():
     with open("atividades_economicas.csv", "r", encoding="utf-8-sig") as data:
         with open("atividades_economicas_curado.csv", "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["_id", "NOME", "NOME_FANTASIA","GEOMETRIA", "LONGITUDE", "LATITUDE", "GEOHASH"])
+            writer.writerow(["_id", "NOME", "NOME_FANTASIA","GEOMETRIA", "LONGITUDE", "LATITUDE", "GEOHASH", "NOME_BAIRRO", "DESC_LOGRADOURO", "NOME_LOGRADOURO", "NUMERO_IMOVEL", "COMPLEMENTO"])
+            #DESC_LOGRADOURO,NOME_LOGRADOURO,NUMERO_IMOVEL,COMPLEMENTO,NOME_BAIRRO
 
             to_gcs = Transformer.from_crs("EPSG:31983", "EPSG:4326", always_xy=True)
 
@@ -98,7 +99,7 @@ def treat_data():
                     s = re.match(r"POINT \(([\d.]+) ([\d.]+)\)", row["GEOMETRIA"]) 
                     longitude, latitude = to_gcs.transform(float(s[1]), float(s[2]))
                     geohash = gcs_to_geohash(longitude, latitude)
-                    writer.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], f"{float(s[1])} {float(s[2])}", longitude, latitude, geohash])
+                    writer.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], f"{float(s[1])} {float(s[2])}", longitude, latitude, geohash, row["NOME_BAIRRO"], row["DESC_LOGRADOURO"], row["NOME_LOGRADOURO"], row["NUMERO_IMOVEL"], row["COMPLEMENTO"]])
 
 def setup():
     bares_dict = {}
@@ -108,6 +109,7 @@ def setup():
             bares_dict[row['_id']] = row
     return bares_dict
 
+treat_data()
 bares = setup()
 
 
