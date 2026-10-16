@@ -109,8 +109,9 @@ def setup():
             bares_dict[row['_id']] = row
     return bares_dict
 
-treat_data()
-bares = setup()
+if __name__ == "__main__":
+    treat_data()
+    bares = setup()
 
 
 #geolocator = Nominatim(user_agent="Geocode BH Bares")

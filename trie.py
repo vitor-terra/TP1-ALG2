@@ -87,9 +87,5 @@ class Trie():
 
         return drivers 
 
-
-    def generate_drivers(range):
-        pass
-
-    
-get_graph()
+if __name__ == "__main__":   
+    get_graph()
