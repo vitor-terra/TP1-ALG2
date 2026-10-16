@@ -53,9 +53,6 @@ def gcs_to_geohash(lon, lat):
         mask >>= 5
     return string_geohash
 
-def geohash_to_gcs(geohash):
-    pass
-
 #Os thersholds são um pouco diferentes
 def find_prefix_length_given_radius(radius):
     if radius <= 0:
