@@ -153,7 +153,7 @@ with open("atividades_economicas.csv", "r", encoding="utf-8-sig") as data:
                 s = re.match(r"POINT \(([\d.]+) ([\d.]+)\)", row["GEOMETRIA"]) 
                 longitude, latitude = to_gcs.transform(float(s[1]), float(s[2]))
                 geohash = gcs_to_geohash(longitude, latitude)
-                writer.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], row["GEOMETRIA"], longitude, latitude, geohash])
+                writer.writerow([row["_id"], row["NOME"], row["NOME_FANTASIA"], f"{float(s[1])} {float(s[2])}", longitude, latitude, geohash])
 
 
 
