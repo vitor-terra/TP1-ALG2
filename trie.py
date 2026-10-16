@@ -1,3 +1,9 @@
+import osmnx as ox
+
+def get_graph():
+    G = ox.graph_from_place('Belo Horizonte, Minas Gerais, Brazil', network_type='drive')
+    ox.save_graphml(G, 'bh.graphml')
+
 def longest_common_prefix(str1, str2):
     count = 0
     for i in range(min(len(str1), len(str2))):
@@ -81,11 +87,9 @@ class Trie():
 
         return drivers 
 
-t = Trie()
-t.insert(t.root, "7h2y8jsb", 0)
-t.insert(t.root, "7h2y8jsc", 1)
-t.insert(t.root, "7h2y8k01", 2)
-t.insert(t.root, "7h2xrcsw", 3)
-breakpoint()
 
-print(t.prefix_search('7h2y8j'))
+    def generate_drivers(range):
+        pass
+
+    
+get_graph()
