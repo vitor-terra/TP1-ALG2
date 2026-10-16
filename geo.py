@@ -103,10 +103,13 @@ def treat_data():
 
 def setup_restaurant_dict():
     bares_dict = {}
+    i = 0
     with open("atividades_economicas_curado.csv", "r", encoding="utf-8-sig") as data:
         bares = csv.DictReader(data)
-        for row in bares:    
+        for row in bares:
+            row["_id"] = i
             bares_dict[row['_id']] = row
+            i += 1
     return bares_dict
 
 if __name__ == "__main__":
