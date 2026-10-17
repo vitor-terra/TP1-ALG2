@@ -115,15 +115,15 @@ def find_adjacent(lon, lat, geohash_length):
 
     adjacent_cells = set()
 
-    adjacent_cells.add(gcs_to_geohash(lon, lat))
-    adjacent_cells.add(gcs_to_geohash(lon, lat + h))
-    adjacent_cells.add(gcs_to_geohash(lon, lat - h))
-    adjacent_cells.add(gcs_to_geohash(lon - w, lat - h))
-    adjacent_cells.add(gcs_to_geohash(lon - w, lat))
-    adjacent_cells.add(gcs_to_geohash(lon - w, lat + h))
-    adjacent_cells.add(gcs_to_geohash(lon + w, lat - h))
-    adjacent_cells.add(gcs_to_geohash(lon + w, lat))
-    adjacent_cells.add(gcs_to_geohash(lon + w, lat + h))
+    adjacent_cells.add(gcs_to_geohash(lon, lat)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon, lat + h)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon, lat - h)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon - w, lat - h)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon - w, lat)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon - w, lat + h)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon + w, lat - h)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon + w, lat)[:geohash_length])
+    adjacent_cells.add(gcs_to_geohash(lon + w, lat + h)[:geohash_length])
 
     return adjacent_cells
 
