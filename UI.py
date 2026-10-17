@@ -7,7 +7,7 @@ from pyproj import Transformer
 BARES = geo.setup_restaurant_dict()
 GRAFO = ox.load_graphml('bh.graphml')
 
-def generate_drivers(total_drivers, sigma, seed = None):
+def generate_drivers(total_drivers, sigma, BARES, GRAFO, seed = None):
 
     if seed is not None:
         random.seed(seed)
@@ -63,7 +63,7 @@ def generate_drivers(total_drivers, sigma, seed = None):
         T.insert(current_node=T.root, geohash=driver_geohash, driver_id=driver_id)
         driver_id += 1    
 
-    return T, driver_position
+    return T, driver_positions
     
 
 

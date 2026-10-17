@@ -1,4 +1,8 @@
+import geo
+import random
+from pyproj import Transformer
 import osmnx as ox
+from haversine import haversine, Unit
 
 def get_graph():
     G = ox.graph_from_place('Belo Horizonte, Minas Gerais, Brazil', network_type='drive')
@@ -27,6 +31,7 @@ class Trie():
     def __init__(self):
         self.root = Node(geohash="")
 
+    #Inserts a driver and its respective geohash on the trie
     def insert(self, current_node, geohash, driver_id):
         for key in current_node.children:
             if geohash[0] == key:
@@ -52,6 +57,7 @@ class Trie():
         current_node.children[geohash[0]] = Node(geohash, {}, [driver_id])
         return True
 
+    #Gets all drivers on a specific geohash
     def get_drivers(self, geohash):
         node = self.root
         while geohash:
@@ -62,8 +68,9 @@ class Trie():
             node = child
         return node.drivers
 
+    #Gets all drivers on an "incomplete" geohash 
+    #'12345' would return drivers under geohashes '12345d', '12345c' etc, for all such geohashes in the trie
     def prefix_search(self, geohash, start = None):
-        #breakpoint()
 
         if start is None:
             start = self.root
@@ -87,5 +94,101 @@ class Trie():
 
         return drivers 
 
+    #restaurant should be the row refering to the restaurant in the restaurant dictionary
+    def get_drivers_within_range(self, meters, restaurant, driver_positions):
+
+        prefix_length = geo.find_prefix_length_given_radius(meters)
+
+        restaurant_lon = float(restaurant['LONGITUDE'])
+        restaurant_lat = float(restaurant['LATITUDE'])
+
+        prefixes = geo.find_adjacent(restaurant_lon, restaurant_lat, prefix_length)
+
+        potential_drivers = []
+        for p in prefixes:
+            potential_drivers += self.prefix_search(p)
+
+        #breakpoint()
+
+        drivers = []
+
+        for driver in potential_drivers:
+            driver_lon = driver_positions[driver]['lon']
+            driver_lat = driver_positions[driver]['lat']
+
+            if haversine((restaurant_lat, restaurant_lon), (driver_lat, driver_lon), unit=Unit.METERS) <= meters:
+                drivers.append(driver)
+
+        return drivers
+        #breakpoint()
+
+    def generate_drivers(self, total_drivers, sigma, BARES, GRAFO, seed = None):
+
+        if seed is not None:
+            random.seed(seed)
+
+        #This resets the trie
+        self.root = Node(geohash="")
+
+        drivers_per_bar, remainder = divmod(total_drivers, len(BARES))
+
+        drivers_in_each_bar = [drivers_per_bar] * len(BARES)
+
+        #Remaining drivers are simply split randomly between restaurants
+        for _ in range(remainder):
+            random_bar = random.randint(0, len(BARES)-1)
+            drivers_in_each_bar[random_bar] += 1
+
+        #Since it doesnt matter which bar "generated" each driver, this list does not care about that at all. It simply stores positions where there are drivers
+        driver_positions = []
+
+        #These lists will store each drivers position in the system used by the csv file.
+        #This is convenient as they are simply meters from the equator under a projection system
+        #Doing this allows us to generate noise more easily later
+        driver_xs = []
+        driver_ys = []
+
+
+        for bar in BARES:
+            bar_x, bar_y = BARES[bar]['GEOMETRIA'].split()
+            bar_x = float(bar_x)
+            bar_y = float(bar_y)
+
+            for driver in range(drivers_in_each_bar[bar]):
+                x_driver = bar_x + random.gauss(0, sigma)
+                y_driver = bar_y + random.gauss(0, sigma)
+
+                #Due to the way the libraries being used work, it is better to do the rest of the position treatment outside the loop
+                driver_xs.append(x_driver)
+                driver_ys.append(y_driver)
+
+        #Here we finally convert the points to longitude and latitude
+        to_gcs = Transformer.from_crs("EPSG:31983", "EPSG:4326", always_xy=True)
+        driver_lons, driver_lats = to_gcs.transform(driver_xs, driver_ys)
+
+        snapped_nodes = ox.distance.nearest_nodes(GRAFO, X=driver_lons, Y=driver_lats)
+
+
+        driver_id = 0
+        for node in snapped_nodes:
+
+            driver_lon = GRAFO.nodes[node]['x']
+            driver_lat = GRAFO.nodes[node]['y']
+            driver_geohash = geo.gcs_to_geohash(driver_lon, driver_lat)
+
+            driver_positions.append({'lon' : driver_lon, 'lat' : driver_lat, 'x' : driver_xs[driver_id], 'y' : driver_ys[driver_id], 'geohash' : driver_geohash})
+            self.insert(current_node=self.root, geohash=driver_geohash, driver_id=driver_id)
+            driver_id += 1    
+
+        return driver_positions
+
+
+
 if __name__ == "__main__":   
-    get_graph()
+    BARES = geo.setup_restaurant_dict()
+    GRAFO = ox.load_graphml('bh.graphml')
+
+    T = Trie()
+    driver_positions = T.generate_drivers(50000, 500, BARES, GRAFO, 'toda vez que eu viajava pela estrada de ouro fino')
+    T.get_drivers_within_range(500, BARES[1], driver_positions)
+    #breakpoint()
