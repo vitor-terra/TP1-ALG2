@@ -1,0 +1,9 @@
+.dash-input-stepper {
+    display: none;
+}
+
+#driver_distance_search_button:disabled {
+    background-color: #bebebe;
+    color: #707070;
+    cursor: not-allowed;
+}
