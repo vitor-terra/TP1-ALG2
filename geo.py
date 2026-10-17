@@ -53,7 +53,6 @@ def gcs_to_geohash(lon, lat):
         mask >>= 5
     return string_geohash
 
-#Os thersholds são um pouco diferentes
 def find_prefix_length_given_radius(radius):
     if radius <= 0:
         raise ValueError(f"Use apenas números maiores do que 0.")
@@ -72,7 +71,6 @@ def find_prefix_length_given_radius(radius):
         return 3
     
     raise ValueError(f"Área de busca grande demais. Tente uma área de no máximo 30000 metros.")
-
 
 def treat_data():
     CNAES = set()
@@ -108,6 +106,26 @@ def setup_restaurant_dict():
             bares_dict[row['_id']] = row
             i += 1
     return bares_dict
+
+def find_adjacent(lon, lat, geohash_length):
+
+    bits = 5 * geohash_length
+    w = 360 / (2 ** ((bits + 1) // 2))
+    h = 180 / 2 ** (bits // 2)
+
+    adjacent_cells = set()
+
+    adjacent_cells.add(gcs_to_geohash(lon, lat))
+    adjacent_cells.add(gcs_to_geohash(lon, lat + h))
+    adjacent_cells.add(gcs_to_geohash(lon, lat - h))
+    adjacent_cells.add(gcs_to_geohash(lon - w, lat - h))
+    adjacent_cells.add(gcs_to_geohash(lon - w, lat))
+    adjacent_cells.add(gcs_to_geohash(lon - w, lat + h))
+    adjacent_cells.add(gcs_to_geohash(lon + w, lat - h))
+    adjacent_cells.add(gcs_to_geohash(lon + w, lat))
+    adjacent_cells.add(gcs_to_geohash(lon + w, lat + h))
+
+    return adjacent_cells
 
 if __name__ == "__main__":
     treat_data()

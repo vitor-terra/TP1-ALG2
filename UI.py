@@ -59,14 +59,14 @@ def generate_drivers(total_drivers, sigma, seed = None):
         driver_lat = GRAFO.nodes[node]['y']
         driver_geohash = geo.gcs_to_geohash(driver_lon, driver_lat)
 
-        driver_positions.append({'lon' : driver_lon, 'lat' : driver_lat, 'geohash' : driver_geohash})
+        driver_positions.append({'lon' : driver_lon, 'lat' : driver_lat, 'x' : driver_xs[driver_id], 'y' : driver_ys[driver_id], 'geohash' : driver_geohash})
         T.insert(current_node=T.root, geohash=driver_geohash, driver_id=driver_id)
         driver_id += 1    
 
-    return T, driver_positions
+    return T, driver_position
     
 
 
 if __name__ == "__main__":
     T, driver_positions = generate_drivers(50, 500, seed='gaagagasaga')
-    #breakpoint()
+    breakpoint()
