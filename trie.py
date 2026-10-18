@@ -191,4 +191,4 @@ if __name__ == "__main__":
     T = Trie()
     driver_positions = T.generate_drivers(500, 500, BARES, GRAFO, 'toda vez que eu viajava pela estrada de ouro fino')
     T.get_drivers_within_range(500, BARES[1], driver_positions)
-    #breakpoint()
+    breakpoint()
