@@ -67,7 +67,7 @@ def find_prefix_length_given_radius(radius):
         return 5
     elif radius < 19400:
         return 4
-    elif radius < 30000:
+    elif radius <= 30000:
         return 3
     
     raise ValueError(f"Área de busca grande demais. Tente uma área de no máximo 30000 metros.")
