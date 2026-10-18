@@ -7,3 +7,7 @@
     color: #707070;
     cursor: not-allowed;
 }
+
+#maximum_travel_time::placeholder {
+    font-size: 12px;
+}
