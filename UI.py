@@ -12,8 +12,12 @@ app = Dash(__name__)
 BARES = geo.setup_restaurant_dict()
 GRAFO = ox.load_graphml('bh.graphml')
 
+T = trie.Trie()
+driver_positions = []
 
 
+
+#value is the restaurants index in BARES
 def make_search_options():
     options = []
 
@@ -52,7 +56,6 @@ def make_search_options():
 
     return options
 
-T = trie.Trie()
 
 
 app.layout = html.Div(
@@ -82,12 +85,12 @@ app.layout = html.Div(
             
             ],style = {'display' : 'flex', 'gap' : '8px', 'alignItems' : 'center'},),   
 
-    dl.Map(
-            #MAP
-            id='map', center=[-19.92, -43.94], zoom=12,
-            children=[dl.TileLayer(), dl.LayerGroup(id='points')],
-            style={'height': '450px', 'marginTop' : '16px'},
-        ),
+        dl.Map(
+                #MAP
+                id='map', center=[-19.92, -43.94], zoom=12,
+                children=[dl.TileLayer(), dl.LayerGroup(id='nearby_driver_markers'), dl.LayerGroup(id='no_good_driver_markers'), dl.LayerGroup(id='restaurant_marker')],
+                style={'height': '700px', 'marginTop' : '16px'},
+            ),
     ])
 
 
@@ -102,8 +105,55 @@ def toggle_search_button(dist, restaurant):
 
 
 
+@app.callback(
+    Output('nearby_driver_markers', 'children'),
+    Input('generate_drivers_button', 'n_clicks'),
+    State('number_of_drivers', 'value'),
+    prevent_initial_call = True
+)
+def get_drivers(generate_drivers_button, number_of_drivers):
+
+    if number_of_drivers is None:
+        return []
+    
+    driver_positions = T.generate_drivers(number_of_drivers, 500, BARES, GRAFO, 111)
+
+    markers = []
+
+    for driver in driver_positions:
+        lat = driver['lat']
+        lon = driver['lon']
+        markers.append(dl.CircleMarker(center=[lat, lon], radius=4, color='red', children=dl.Tooltip(f'Escolha um restaurante para saber a distância')))
+
+    return markers
 
 
+
+@app.callback(
+    Output('restaurant_marker', 'children'),
+    Input('restaurants_dropdown', 'value'),
+    prevent_initial_call = True
+)
+def show_restaurant_marker(restaurant):
+    if restaurant is None:
+        return []
+    
+    r = BARES[restaurant]
+
+    if r['NOME_FANTASIA'] != '':
+        tooltip = r['NOME_FANTASIA']
+    else:
+        tooltip = r['NOME']
+
+    return [dl.CircleMarker(center=[r['LATITUDE'], r['LONGITUDE']], radius=6, color='green', children=dl.Tooltip(tooltip))]
+
+
+#
+@app.callback(
+    #Output()
+)
+def show_drivers_in_radius():
+    pass
 
 if __name__ == "__main__":
 
