@@ -180,7 +180,7 @@ class Trie():
             driver_lat = GRAFO.nodes[node]['y']
             driver_geohash = geo.gcs_to_geohash(driver_lon, driver_lat)
 
-            driver_positions.append({'lon' : driver_lon, 'lat' : driver_lat, 'x' : driver_xs[driver_id], 'y' : driver_ys[driver_id], 'geohash' : driver_geohash})
+            driver_positions.append({'lon' : driver_lon, 'lat' : driver_lat, 'x' : driver_xs[driver_id], 'y' : driver_ys[driver_id], 'geohash' : driver_geohash, 'node' : node})
             self.insert(current_node=self.root, geohash=driver_geohash, driver_id=driver_id)
             driver_id += 1    
 
