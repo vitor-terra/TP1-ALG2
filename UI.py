@@ -115,6 +115,8 @@ def get_drivers(generate_drivers_button, number_of_drivers):
 
     if number_of_drivers is None:
         return []
+
+    global driver_positions
     
     driver_positions = T.generate_drivers(number_of_drivers, 500, BARES, GRAFO, 111)
 
@@ -134,11 +136,11 @@ def get_drivers(generate_drivers_button, number_of_drivers):
     Input('restaurants_dropdown', 'value'),
     prevent_initial_call = True
 )
-def show_restaurant_marker(restaurant):
-    if restaurant is None:
+def show_restaurant_marker(restaurant_id):
+    if restaurant_id is None:
         return []
     
-    r = BARES[restaurant]
+    r = BARES[restaurant_id]
 
     if r['NOME_FANTASIA'] != '':
         tooltip = r['NOME_FANTASIA']
@@ -148,12 +150,38 @@ def show_restaurant_marker(restaurant):
     return [dl.CircleMarker(center=[r['LATITUDE'], r['LONGITUDE']], radius=6, color='green', children=dl.Tooltip(tooltip))]
 
 
-#
+
 @app.callback(
-    #Output()
+    Output('nearby_driver_markers', 'children', allow_duplicate=True),
+    Output('no_good_driver_markers', 'children'),
+    Input('driver_distance_search_button', 'n_clicks'),
+    State('maximum_distance_input', 'value'),
+    State('restaurants_dropdown', 'value'),
+    prevent_initial_call = True
 )
-def show_drivers_in_radius():
-    pass
+def show_drivers_in_radius(search_button, max_dist, restaurant_id):
+    drivers_in_range = T.get_drivers_within_range(max_dist, BARES[restaurant_id], driver_positions)
+    drivers_out_of_range = []
+    for driver_id in range(len(driver_positions)):
+        if driver_id in drivers_in_range:
+            continue
+        drivers_out_of_range.append(driver_id)
+
+
+    in_range_markers = []
+    out_of_range_markers = []
+
+    for driver in drivers_in_range:
+        lat = driver_positions[driver]['lat']
+        lon = driver_positions[driver]['lon']
+        in_range_markers.append(dl.CircleMarker(center=[lat, lon], radius=4, color='red', children=dl.Tooltip(f'{driver_positions[driver]['dist']} Metros de distância')))
+
+    for driver in drivers_out_of_range:
+        lat = driver_positions[driver]['lat']
+        lon = driver_positions[driver]['lon']
+        out_of_range_markers.append(dl.CircleMarker(center=[lat, lon], radius=4, color='gray'))
+
+    return in_range_markers, out_of_range_markers
 
 if __name__ == "__main__":
 

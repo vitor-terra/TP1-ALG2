@@ -116,7 +116,11 @@ class Trie():
             driver_lon = driver_positions[driver]['lon']
             driver_lat = driver_positions[driver]['lat']
 
-            if haversine((restaurant_lat, restaurant_lon), (driver_lat, driver_lon), unit=Unit.METERS) <= meters:
+            distance = haversine((restaurant_lat, restaurant_lon), (driver_lat, driver_lon), unit=Unit.METERS)
+
+            driver_positions[driver]['dist'] = distance
+
+            if distance <= meters:
                 drivers.append(driver)
 
         return drivers
