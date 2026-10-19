@@ -4,10 +4,13 @@ from pyproj import Transformer
 import osmnx as ox
 from haversine import haversine, Unit
 
+#fetches and saves the graph initially using the osmnx library (should not be run if the graph is already aved)
 def get_graph():
     G = ox.graph_from_place('Belo Horizonte, Minas Gerais, Brazil', network_type='drive')
     ox.save_graphml(G, 'bh.graphml')
 
+
+#finds the longest common prefix between two strings by comparing characters until one is different
 def longest_common_prefix(str1, str2):
     count = 0
     for i in range(min(len(str1), len(str2))):
