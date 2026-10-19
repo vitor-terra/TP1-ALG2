@@ -12,10 +12,14 @@ app = Dash(__name__)
 
 BARES = geo.setup_restaurant_dict()
 
+
 GRAFO = ox.load_graphml('bh.graphml')
+#things below are needed for calculating estimated times of arrival
 GRAFO = ox.routing.add_edge_speeds(GRAFO)
 GRAFO = ox.routing.add_edge_travel_times(GRAFO)
 GRAFO_INVERSO = GRAFO.reverse(copy=False)
+
+
 
 T = trie.Trie()
 driver_positions = []
@@ -62,11 +66,11 @@ def make_search_options():
     return options
 
 
-
+#returns a dict containing {driver_id : estimated time of arrival} for all ids in 'driver_ids'
 #restaurant should be the entire row in BARES, not the id
-#max_travel_time gets received in minutes for user convenience, so it must be converted to seconds
-def get_etas(restaurant, driver_ids, driver_positions, max_travel_time=None):
+def get_etas(restaurant, driver_ids, driver_positions, max_travel_time=None): #returns a
 
+    #max_travel_time gets received in minutes for user convenience, so it must be converted to seconds
     if max_travel_time is not None:
         cutoff_minutes = max_travel_time * 60
     else:
@@ -123,7 +127,8 @@ app.layout = html.Div(
     ])
 
 
-
+#this callback makes it so the search button is only clickable after choosing a maximum distance and a restaurant
+#it is clickable with no drivers; it just doesn't do anything
 @app.callback(
     Output('driver_distance_search_button', 'disabled'),
     Input('maximum_distance_input', 'value'),
@@ -133,7 +138,7 @@ def toggle_search_button(dist, restaurant):
     return dist is None or restaurant is None
 
 
-
+#calls 'Trie.generate_drivers' and displays the returned list as red markers on the map when the generate drivers button is pressed
 @app.callback(
     Output('nearby_driver_markers', 'children'),
     Input('generate_drivers_button', 'n_clicks'),
@@ -159,7 +164,7 @@ def get_drivers(generate_drivers_button, number_of_drivers):
     return markers
 
 
-
+#shows the selected restaurant as a green marker when one is selected. uses NOME_FANTASIA for the tooltip if one is available
 @app.callback(
     Output('restaurant_marker', 'children'),
     Input('restaurants_dropdown', 'value'),
@@ -179,7 +184,7 @@ def show_restaurant_marker(restaurant_id):
     return [dl.CircleMarker(center=[r['LATITUDE'], r['LONGITUDE']], radius=6, color='green', children=dl.Tooltip(tooltip))]
 
 
-
+#updates all markers on the map. drivers within range are kept as red and all others become gray
 @app.callback(
     Output('nearby_driver_markers', 'children', allow_duplicate=True),
     Output('no_good_driver_markers', 'children'),
@@ -190,7 +195,10 @@ def show_restaurant_marker(restaurant_id):
     prevent_initial_call = True
 )
 def show_drivers_in_radius(search_button, max_dist, restaurant_id, max_travel_time):
+    #this returns the ids of all drivers within range
     drivers_in_range = T.get_drivers_within_range(max_dist, BARES[restaurant_id], driver_positions)
+
+    #this goes through the list of drivers and takes the ids of all drivers whose ids are not in the within range list
     drivers_out_of_range = []
     for driver_id in range(len(driver_positions)):
         if driver_id in drivers_in_range:
@@ -203,6 +211,8 @@ def show_drivers_in_radius(search_button, max_dist, restaurant_id, max_travel_ti
 
     etas = get_etas(BARES[restaurant_id], drivers_in_range, driver_positions, max_travel_time)
 
+    #this loop adds the ETAs for all drivers in range and adds their markers to a list to be displayed later
+    #the distance between them and the restaurant is displayed as a tooltip when their marker is hovered
     for driver_id in drivers_in_range:
         lat = driver_positions[driver_id]['lat']
         lon = driver_positions[driver_id]['lon']
@@ -214,6 +224,8 @@ def show_drivers_in_radius(search_button, max_dist, restaurant_id, max_travel_ti
 
         in_range_markers.append(dl.CircleMarker(center=[lat, lon], radius=4, color='red', children=dl.Tooltip(f'{driver_positions[driver_id]['dist']:.2f} Metros de distância. Tempo Esperado de Chegada: {eta_text}')))
 
+    #this loop makes the markers for all drivers not within range
+    #due to them being out of range, their distance to the restaurant was likely never calculated, thus, they get no tooltip
     for driver_id in drivers_out_of_range:
         lat = driver_positions[driver_id]['lat']
         lon = driver_positions[driver_id]['lon']
