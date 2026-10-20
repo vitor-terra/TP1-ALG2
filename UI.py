@@ -72,12 +72,12 @@ def get_etas(restaurant, driver_ids, driver_positions, max_travel_time=None): #r
 
     #max_travel_time gets received in minutes for user convenience, so it must be converted to seconds
     if max_travel_time is not None:
-        cutoff_minutes = max_travel_time * 60
+        cutoff_seconds = max_travel_time * 60
     else:
-        cutoff_minutes = max_travel_time
+        cutoff_seconds = max_travel_time
     
     restaurant_node = ox.distance.nearest_nodes(GRAFO, X=float(restaurant['LONGITUDE']), Y=float(restaurant['LATITUDE']))
-    etas = nx.single_source_dijkstra_path_length(GRAFO_INVERSO, restaurant_node, weight='travel_time', cutoff=cutoff_minutes)
+    etas = nx.single_source_dijkstra_path_length(GRAFO_INVERSO, restaurant_node, weight='travel_time', cutoff=cutoff_seconds)
 
     etas_dict = {}
 
