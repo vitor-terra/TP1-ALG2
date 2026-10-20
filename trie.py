@@ -25,9 +25,10 @@ class Node():
     #__slots__ = ("geohash", "children", "drivers")
     
     def __init__(self, geohash = None, children = None, drivers = None):
-        self.geohash = geohash                                      #the rest of the geohash on that node
+        self.geohash = geohash                                      #the rest of the geohash on that node. (root will always have geohash = ""; its child might have geohash = "7h2"; its child might have geohash = "w"; its child might have "q"; its child might have "z3g", forming a full 8 digit geohash = "7h2wqz3g")
         self.children = children if children is not None else {}    #each dict element is {"first letter of the rest of the geohash on that node" : Node()} ex: "a" : Node(geohash = "abcd")
         self.drivers = drivers if drivers is not None else []       #all drivers on that geohash square (their id)
+        #the children are a non ordered list that gets combed through each time; a possible improvement would be to use binary search for that or make them into hashes, though that would use a lot of space as the number of drivers increased
 
 
 class Trie():
@@ -60,16 +61,7 @@ class Trie():
         current_node.children[geohash[0]] = Node(geohash, {}, [driver_id])
         return True
 
-    #Gets all drivers on a specific geohash
-    def get_drivers(self, geohash):
-        node = self.root
-        while geohash:
-            child = node.children.get(geohash[0])
-            if child is None or not geohash.startswith(child.geohash):
-                return []
-            geohash = geohash[len(child.geohash):]
-            node = child
-        return node.drivers
+
 
     #Gets all drivers on an "incomplete" geohash 
     #'12345' would return drivers under geohashes '12345d', '12345c' etc, for all such geohashes in the trie
