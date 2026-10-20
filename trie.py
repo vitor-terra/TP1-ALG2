@@ -37,33 +37,45 @@ class Trie():
 
     #Inserts a driver and its respective geohash on the trie
     def insert(self, current_node, geohash, driver_id):
+        #search the current node's children to see if we have to go further down the tree or insert here
         for key in current_node.children:
             if geohash[0] == key:
+                #if we find a path to go down
                 if geohash != current_node.children[key].geohash:
 
+                    #first we have to calculate the longest common prefix between the current's node geohash and the geohash of child we are going down into
                     lcp = longest_common_prefix(geohash, current_node.children[key].geohash)
 
+                    #if the length of the geohash we are trying to insert is equal to the length of what's stored in the child, we can go down the tree
                     if lcp == len(current_node.children[key].geohash):
+                        #we only keep the characters of the geohash that were not in the child we just looked at, as its children will start from there
                         return self.insert(current_node.children[key], geohash[lcp:], driver_id)
 
+                    #if the lcp is smaller than the child we are looking at, we need to split it and add at the new fork
                     if lcp < len(current_node.children[key].geohash):
                         current_node.children[key].children = {
+                            #at the point of the childs geohash where it diverges (current_node.children[key].geohash[lcp]), 
+                            #we create one child with the remainder of the geohash and its old children (Node(current_node.children[key].geohash[lcp:], current_node.children[key].children, current_node.children[key].drivers))
+                            #and another with the new geohash and driver (geohash[lcp] : Node(geohash[lcp:], {}, [driver_id])
                             current_node.children[key].geohash[lcp] : Node(current_node.children[key].geohash[lcp:], current_node.children[key].children, current_node.children[key].drivers),
                             geohash[lcp] : Node(geohash[lcp:], {}, [driver_id])
                             }
+                        #then we update the node with the new truncated geohash and reset its driver list, as it is now not a leaf anymore
                         current_node.children[key].geohash = geohash[:lcp]
                         current_node.children[key].drivers = []
                         return True
                 else:
+                    #if the geohash we are trying to insert is equal to the node we are looking at, the driver is on the current node, so we append it to its list
                     current_node.children[key].drivers.append(driver_id)
                     return True
-
+                
+        #if we can't go down the tree with the node we are trying to insert, we put it here
         current_node.children[geohash[0]] = Node(geohash, {}, [driver_id])
         return True
 
 
 
-    #Gets all drivers on an "incomplete" geohash 
+    #Gets all drivers below a geohash
     #'12345' would return drivers under geohashes '12345d', '12345c' etc, for all such geohashes in the trie
     def prefix_search(self, geohash, start = None):
 
@@ -89,24 +101,26 @@ class Trie():
 
         return drivers 
 
+    #gets all the drivers within the specified distance from the restaurant
     #restaurant should be the row refering to the restaurant in the restaurant dictionary
     def get_drivers_within_range(self, meters, restaurant, driver_positions):
 
+        #we find how big the geohash cell we have to search in is
         prefix_length = geo.find_prefix_length_given_radius(meters)
 
         restaurant_lon = float(restaurant['LONGITUDE'])
         restaurant_lat = float(restaurant['LATITUDE'])
 
+        #we take the adjacent cells as well, since a restaurant might be close to the edge of a cell and there might be drivers on the adjacent cell that are within range
         prefixes = geo.find_adjacent(restaurant_lon, restaurant_lat, prefix_length)
 
         potential_drivers = []
         for p in prefixes:
             potential_drivers += self.prefix_search(p)
 
-        #breakpoint()
-
         drivers = []
 
+        #after gathering all potential drivers (all drivers on the nine geohash cells we looked), we try one by one to see which are actually within distance
         for driver in potential_drivers:
             driver_lon = driver_positions[driver]['lon']
             driver_lat = driver_positions[driver]['lat']
@@ -119,7 +133,7 @@ class Trie():
                 drivers.append(driver)
 
         return drivers
-        #breakpoint()
+
 
     def generate_drivers(self, total_drivers, sigma, BARES, GRAFO, seed = None):
 
@@ -175,6 +189,9 @@ class Trie():
             driver_lat = GRAFO.nodes[node]['y']
             driver_geohash = geo.gcs_to_geohash(driver_lon, driver_lat)
 
+            #we store each driver with their latitude and longitude, so we can later use haversine distance to see if a potential driver is actually within range
+            #we also keep track of the nodes they are stored in inside the graph generated by the osmnx library
+            #this will be needed when we use it to calculate the estimated times of arrival to the restaurant
             driver_positions.append({'lon' : driver_lon, 'lat' : driver_lat, 'x' : driver_xs[driver_id], 'y' : driver_ys[driver_id], 'geohash' : driver_geohash, 'node' : node})
             self.insert(current_node=self.root, geohash=driver_geohash, driver_id=driver_id)
             driver_id += 1    
