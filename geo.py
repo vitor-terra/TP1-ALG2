@@ -1,6 +1,6 @@
 import csv
-from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
+#from geopy.geocoders import Nominatim
+#from geopy.extra.rate_limiter import RateLimiter
 import re
 from pyproj import Transformer
 
@@ -178,6 +178,8 @@ if __name__ == "__main__":
 #BELOW IS THE VERSION FOR COLLECTING RESTAURANT LOCATION DATA USING A GEOLOCATION LIBRARY
 #I DECIDED NOT TO USE THIS VERSION AS IT WAS FAIRLY IMPRECISE (NOT FINDING DATA BEYOND STREET, MISSING CERTAIN LOOKUPS COMPLETELY, ETC)
 #IT TAKES SEVERAL HOURS TO RUN SO BE CAREFUL EXECUTING THIS
+
+#IF YOU WANT TO RUN THIS CODE YOU MUST ALSO INSTALL GEOPY WITH 'pip install geopy'
 
 
 #geolocator = Nominatim(user_agent="Geocode BH Bares")
