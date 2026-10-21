@@ -22,7 +22,7 @@ def longest_common_prefix(str1, str2):
 
 
 class Node():
-    #__slots__ = ("geohash", "children", "drivers")
+    __slots__ = ("geohash", "children", "drivers")
     
     def __init__(self, geohash = None, children = None, drivers = None):
         self.geohash = geohash                                      #the rest of the geohash on that node. (root will always have geohash = ""; its child might have geohash = "7h2"; its child might have geohash = "w"; its child might have "q"; its child might have "z3g", forming a full 8 digit geohash = "7h2wqz3g")
