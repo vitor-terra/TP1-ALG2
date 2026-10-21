@@ -103,7 +103,7 @@ app.layout = html.Div(
             html.Div([
 #
                 html.Div([
-                    #MAX DISTANCE / RESTAURANT DROPDOWN
+                    #MAX DISTANCE / RESTAURANT DROPDOWN / MAX TRAVEL TIME
                     dcc.Input(id='maximum_distance_input', type='number', min=1, max=30000, placeholder='Distância Máxima para Busca de Motoristas', style= {'width' : '330px', 'alignItems' : 'right'}),
                     dcc.Input(id='maximum_travel_time', type='number', placeholder='Tempo Máximo de Viagem em Minutos. Vazio = Sem Limite', style= {'width' : '330px', 'alignItems' : 'right'}),
                     dcc.Dropdown(id='restaurants_dropdown', options=make_search_options(), placeholder='Escolha um Restaurante')
@@ -152,7 +152,7 @@ def get_drivers(generate_drivers_button, number_of_drivers):
 
     global driver_positions
     
-    driver_positions = T.generate_drivers(number_of_drivers, 500, BARES, GRAFO, 111)
+    driver_positions = T.generate_drivers(number_of_drivers, 400, BARES, GRAFO, 111)
 
     markers = []
 
